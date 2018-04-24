@@ -1,0 +1,83 @@
+{
+  "cluster": {                                              // main cluster component configuration
+    "id": "QmZyXksFG3vmLdAnmkXreMVZvxc4sNi1u21VxbRdNa2S1b", // peer ID
+    "private_key": "<base64 representation of the key>",
+    "secret": "<32-bit hex encoded secret>",
+    "peers": [],                                            // List of peers' multiaddresses
+    "bootstrap": [],                                        // List of bootstrap peers' multiaddresses
+    "leave_on_shutdown": false,                             // Abandon cluster on shutdown
+    "listen_multiaddress": "/ip4/0.0.0.0/tcp/9096",         // Cluster RPC listen
+    "state_sync_interval": "1m0s",                          // Time between state syncs
+    "ipfs_sync_interval": "2m10s",                          // Time between ipfs-state syncs
+    "replication_factor_min": -1,                           // Replication factor minimum threshold. -1 == all
+    "replication_factor_max": -1,                           // Replication factor maximum threshold. -1 == all
+    "monitor_ping_interval": "15s"                          // Time between alive-pings. See cluster monitoring section
+  },
+  "consensus": {
+    "raft": {
+      "wait_for_leader_timeout": "15s",                     // How long to wait for a leader when there is none
+      "network_timeout": "10s",                             // How long to wait before timing out a network operation
+      "commit_retries": 1,                                  // How many retries should we make before giving up on a commit failure
+      "commit_retry_delay": "200ms",                        // How long to wait between commit retries
+      "heartbeat_timeout": "1s",                            // Here and below: Raft options.
+      "election_timeout": "1s",                             // See https://godoc.org/github.com/hashicorp/raft#Config
+      "commit_timeout": "50ms",
+      "max_append_entries": 64,
+      "trailing_logs": 10240,
+      "snapshot_interval": "2m0s",
+      "snapshot_threshold": 8192,
+      "leader_lease_timeout": "500ms"
+    }
+  },
+  "api": {
+    "restapi": {
+      "listen_multiaddress": "/ip4/127.0.0.1/tcp/9094",     // API listen
+      "ssl_cert_file": "path_to_certificate",               // Path to SSL public certificate. Unless absolute, relative to config folder
+      "ssl_key_file": "path_to_key",                        // Path to SSL private key. Unless absolute, relative to config folder
+      "read_timeout": "30s",                                // Here and below, timeoutes for network operations
+      "read_header_timeout": "5s",
+      "write_timeout": "1m0s",
+      "idle_timeout": "2m0s",
+      "basic_auth_credentials": [                           // Leave null for no-basic-auth
+        "user": "pass"
+      ]
+    }
+  },
+  "ipfs_connector": {
+    "ipfshttp": {
+      "proxy_listen_multiaddress": "/ip4/127.0.0.1/tcp/9095", // ipfs-proxy listen address
+      "node_multiaddress": "/ip4/127.0.0.1/tcp/5001",         // ipfs-node api location
+      "connect_swarms_delay": "7s",                           // after boot, how long to wait before trying to connect ipfs peers
+      "proxy_read_timeout": "10m0s",                          // Here and below, timeouts for network operations
+      "proxy_read_header_timeout": "5s",
+      "proxy_write_timeout": "10m0s",
+      "proxy_idle_timeout": "1m0s",
+      "pin_method": "pin"                                     // Supports "pin" and "refs". "refs" will fetch all deps before pinning.
+                                                              // Use refs when GC is disabled on ipfs.
+                                                              // Increase maptracker.concurrent_pins to take advantange of concurrency.
+    }
+  },
+  "pin_tracker": {
+    "maptracker": {
+      "pinning_timeout": "1h0m0s",                            // How long before we transition a pinning CID to error state
+      "unpinning_timeout": "5m0s",                            // How long before we transition an unpinning CID to error state
+      "max_pin_queue_size": 4096,                             // How many pins to hold in the pinning queue
+      "concurrent_pins": 1                                    // How many concurrent pin requests we can perform.
+                                                              // Only useful with ipfshttp.pin_method set to "refs"
+    }
+  }
+  "monitor": {
+    "monbasic": {
+      "check_interval": "15s"                                 // How often to check for expired alerts. See cluster monitoring section
+    }
+  },
+  "informer": {
+    "disk": {                                                 // Used when using the disk informer (default)
+      "metric_ttl": "30s",                                    // Amount of time this metric is valid. Will be polled at TTL/2.
+      "metric_type": "freespace"                              // or "reposize": type of metric
+    },
+    "numpin": {                                               // Used when using the numpin informer
+      "metric_ttl": "10s"                                     // Amount of time this metric is valid. Will be polled at TTL/2.
+    }
+  }
+}
